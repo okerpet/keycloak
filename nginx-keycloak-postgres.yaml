@@ -25,7 +25,7 @@ services:
       environment:
         POSTGRES_DB: keycloak
         POSTGRES_USER: keycloak
-        POSTGRES_PASSWORD: 123557
+        POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD}
   mykeycloak:
       image: jboss/keycloak:latest
       container_name: keycloak
@@ -36,9 +36,9 @@ services:
         DB_DATABASE: keycloak
         DB_USER: keycloak
         DB_SCHEMA: public
-        DB_PASSWORD: 123557
-        KEYCLOAK_USER: admin
-        KEYCLOAK_PASSWORD: Pa55w0rd
+        DB_PASSWORD: ${POSTGRES_DB_PASSWORD}
+        KEYCLOAK_USER: qwokka
+        KEYCLOAK_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
         PROXY_ADDRESS_FORWARDING: "true"
         JDBC_PARAMS: enabledTLSProtocols=TLSv1.2
         JAVA_OPTS: -server -Xms1024m -Xmx1024m
