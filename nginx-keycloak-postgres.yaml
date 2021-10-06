@@ -1,4 +1,4 @@
-version: '3'
+version: '3.3'
 
 volumes:
   postgres_data:
@@ -26,8 +26,8 @@ services:
         POSTGRES_DB: keycloak
         POSTGRES_USER: keycloak
         POSTGRES_PASSWORD: 123557
-  keycloak:
-      image: quay.io/keycloak/keycloak:latest
+  mykeycloak:
+      image: jboss/keycloak:latest
       container_name: keycloak
       restart: unless-stopped
       environment:
