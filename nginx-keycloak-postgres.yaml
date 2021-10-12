@@ -16,6 +16,7 @@ services:
     ports:
       - 80:80
       - 443:443
+
   postgres:
       image: postgres
       container_name: postgres
@@ -26,10 +27,17 @@ services:
         POSTGRES_DB: keycloak
         POSTGRES_USER: keycloak
         POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD}
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+  
   mykeycloak:
       image: jboss/keycloak:latest
       container_name: keycloak
       restart: unless-stopped
+      command: ["-Djboss.socket.binding.port-offset=100"]
       environment:
         DB_VENDOR: POSTGRES
         DB_ADDR: postgres
@@ -41,10 +49,32 @@ services:
         KEYCLOAK_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
         PROXY_ADDRESS_FORWARDING: "true"
         JDBC_PARAMS: enabledTLSProtocols=TLSv1.2
+        JDBC_PARAMS: useSSL=false
         JAVA_OPTS: -server -Xms1024m -Xmx1024m
-        # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
-        #JDBC_PARAMS: "ssl=true"
       ports:
-        - 8080:8080
+        - 8180:8080
       depends_on:
-        - postgres
+        postgres:
+          condition: service_healthy
+      healthcheck:
+        test: "curl -f https://mykeycloak/auth || exit 1"
+        start_period: 30s
+  
+  openldap:
+    image: osixia/openldap:1.5.0
+    container_name: openldap
+    environment:
+      - LDAP_ORGANISATION="MyCompany Inc."
+      - LDAP_DOMAIN=mycompany.com
+    ports:
+      - "389:389"
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:0.9.0
+    container_name: phpldapadmin
+    environment:
+      - PHPLDAPADMIN_LDAP_HOSTS=openldap
+    ports:
+      - "6443:443"
+    depends_on:
+      - openldap
